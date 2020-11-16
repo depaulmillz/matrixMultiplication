@@ -46,7 +46,7 @@ multiply_tile_kern(int rowsA, int cols, int colsB, const float *__restrict__ A, 
             __syncthreads();
 
             // let reg_prev_loop = reg
-            for (int k = 0; k < BLOCKSIZE; k++) {
+            for (int k = 0; k < min(BLOCKSIZE, cols - w * BLOCKSIZE); k++) {
                 // subA(threadIdx.x, k) is A(i, w * BLOCKSIZE + k)
                 // subB(k, threadIdx.y) is B(w * BLOCKSIZE + k, j)
 
