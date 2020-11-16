@@ -38,25 +38,29 @@ multiply_tile_kern(int rowsA, int cols, int colsB, const float *__restrict__ A, 
 
     float reg = 0.0;
     if (i < rowsA && j < colsB) {
-
+        // let initial_reg = reg;
         for (int w = 0; w < gridDim.y; w++) {
 
             subA[IDX2C(threadIdx.x, threadIdx.y, BLOCKSIZE)] = A[IDX2C(i, w * BLOCKSIZE + threadIdx.y, rowsA)];
             subB[IDX2C(threadIdx.x, threadIdx.y, BLOCKSIZE)] = B[IDX2C(w * BLOCKSIZE + threadIdx.x, j, cols)];
             __syncthreads();
 
-            // let reg_prev = reg
+            // let reg_prev_loop = reg
             for (int k = 0; k < BLOCKSIZE; k++) {
                 // subA(threadIdx.x, k) is A(i, w * BLOCKSIZE + k)
                 // subB(k, threadIdx.y) is B(w * BLOCKSIZE + k, j)
 
+                // let reg_prev = reg
                 reg = fma(subA[IDX2C(threadIdx.x, k, BLOCKSIZE)], subB[IDX2C(k, threadIdx.y, BLOCKSIZE)], reg);
+                // reg = reg_prev + A(i, w * BLOCKSIZE + k) * B(w * BLOCKSIZE + k, j)
             }
-            // reg = reg_prev + sum k from 0, blocksize - 1 A(i, w * BLOCKSIZE + k) * B(w * BLOCKSIZE + k, j)
+            // reg = reg_prev_loop + sum k from 0, blocksize - 1 A(i, w * BLOCKSIZE + k) * B(w * BLOCKSIZE + k, j)
             __syncthreads();
         }
+        // reg = initial_reg + sum w from 0 to gridDim.y - 1 ( sum k from 0, blocksize - 1 A(i, w * BLOCKSIZE + k) * B(w * BLOCKSIZE + k, j) )
+        // this means reg holds C(i,j)
 
-        C[i + j * rowsA] = reg;
+        C[IDX2C(i,j,rowsA)] = reg;
     }
 }
 
