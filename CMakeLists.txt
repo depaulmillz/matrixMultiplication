@@ -35,3 +35,5 @@ string(APPEND CMAKE_CUDA_FLAGS " -Xptxas=-v -gencode arch=compute_${CUDA_ARCH},c
 enable_testing()
 
 add_executable(cpu_matrix cpu/matrix.cc)
+
+add_executable(gpu_matrix gpu/matrix.cu)
