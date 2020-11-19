@@ -37,3 +37,4 @@ enable_testing()
 add_executable(cpu_matrix cpu/matrix.cc)
 
 add_executable(gpu_matrix gpu/matrix.cu)
+target_link_libraries(gpu_matrix cublas)
